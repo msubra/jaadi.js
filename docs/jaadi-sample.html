@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+	<title>Jaadi - Working Example</title>
+
+	<script type="text/javascript" src="js/angular.min-1.2.6.js"></script>
+	<script type="text/javascript" src="../js/jaadi-1.0.js"></script>
+	<script type="text/javascript" src="../js/bst.jaadi.js"></script>
+	<script type="text/javascript" src="../js/storage.jaadi.js"></script>
+</head>
+<body>
+
+<div id="dom-storage" ng-controller="DOMStorage">
+	<h2>DOM Storage</h2>
+	<h3>This storage will be reset on browse reload</h3>
+
+	<form ng-submit="addEntry()">
+		<div> Key: <input ng-model="key" type="text"></div>
+		<div>Value: <input ng-model="val" type="text"></div>
+		<input type="submit">
+	</form>
+
+	<table>
+		<tr>
+			<td>Key</td>
+			<td>Value</td>
+		</tr>
+		<tr ng-repeat="item in items()">
+			<td><a href="javascript:;" ng-click="remove(item)">X</a></td>
+			<td>{{item[0]}}</td>
+			<td>{{item[1]}}</td>
+		</tr>
+	</table>
+</div>
+
+
+<h2>W3C LocalStorage</h2>
+<div id="local-storage" ng-controller="LocalStorage">
+	<h3>Local Storage</h3>
+	<h3>This storage will be persisted in the browser localstorage. When the same is used in Chrome Apps/Extensions, instead of <code>window.localStorage</code> Chrome's storage <code>chrome.storage.local</code> will be used</h3>
+
+	<form ng-submit="addEntry()">
+		<div> Key: <input ng-model="key" type="text"></div>
+		<div>Value: <input ng-model="val" type="text"></div>
+		<input type="submit">
+	</form>
+
+	<table>
+		<tr>
+			<td>Key</td>
+			<td>Value</td>
+		</tr>
+		<tr ng-repeat="item in items()">
+			<td><a href="javascript:;" ng-click="remove(item)">X</a></td>
+			<td>{{item[0]}}</td>
+			<td>{{item[1]}}</td>
+		</tr>
+	</table>
+</div>
+
+<h2>BinarySearchTree Storage</h2>
+<div id="bst-storage">
+<script type="text/javascript">
+	bst = Jaadi.createInstance("bst")
+	for(var i =0; i < 100000; i++)
+	{
+		key = "rand_"+ Math.round(Math.random() * 100000);
+		value = i;
+		bst.put(key,value);
+	}
+	console.log(bst)
+
+	function print()
+	{
+		count = 0;
+		bst.dfs(function(node){
+			if(count++ < 100)
+				console.log(node.value.value);
+		})
+	}
+</script>
+<button onclick="print()">View BST</button>
+</div>
+
+
+</body>
+
+<script type="text/javascript">
+
+dom = Jaadi.createInstance("dom")
+function DOMStorage($scope){
+	$scope.items = function(){ return dom.items();}
+
+	$scope.addEntry = function()
+	{
+		dom.put($scope.key,$scope.val)
+	}
+
+	$scope.remove = function(item)
+	{
+		dom.remove(item[0]);
+	}
+}
+
+local = Jaadi.createInstance("localstorage")
+function LocalStorage($scope){
+	$scope.items = function(){ return local.items();}
+
+	$scope.addEntry = function()
+	{
+		local.put($scope.key,$scope.val)
+	}
+	$scope.remove = function(item)
+	{
+		console.log("removing item", item)
+		local.remove(item[0]);
+	}
+
+}
+
+</script>
+
+</html>
