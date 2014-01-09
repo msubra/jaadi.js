@@ -33,6 +33,14 @@ JaadiPlugin = (function() {
     return _items;
   };
 
+  JaadiPlugin.prototype.parseJSON = function(item) {
+    try {
+      return JSON.parse(item);
+    } catch (_error) {
+      return null;
+    }
+  };
+
   return JaadiPlugin;
 
 })();

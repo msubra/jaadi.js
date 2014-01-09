@@ -163,3 +163,22 @@ test('Test BinarySearchTree',function(){
 	order = [["a", 3], ["d", 4],["k", 1], ["m", 2]];
 	equal(JSON.stringify(items),JSON.stringify(order))
 })
+
+test('Cookie storage',function(){
+	jar = Jaadi.createInstance('cookie')
+	equal(jar instanceof CookieStoragePlugin,true);
+
+	jar.put("a",1);
+	jar.put("b",2);
+
+	equal(jar.size(),2)
+
+	/* get item */
+	equal(jar.get("a"),1);
+
+	/* add 1  more element */
+	jar.remove("b");
+	v = jar.get("b");
+	//equal(jar.size(),1);
+
+})

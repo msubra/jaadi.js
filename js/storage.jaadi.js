@@ -3,7 +3,7 @@
 Storage plugin for Chrome Local Storage object
 */
 
-var ChromeLocalStoragePlugin, W3CLocalStoragePlugin, W3CSessionStoragePlugin, W3CStoragePlugin,
+var ChromeLocalStoragePlugin, CookieStoragePlugin, W3CLocalStoragePlugin, W3CSessionStoragePlugin, W3CStoragePlugin,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -15,7 +15,7 @@ ChromeLocalStoragePlugin = (function(_super) {
   }
 
   ChromeLocalStoragePlugin.prototype.get = function(key) {
-    return JSON.parse(this.storage.get(key));
+    return this.parseJSON(this.storage.get(key));
   };
 
   ChromeLocalStoragePlugin.prototype.put = function(key, value) {
@@ -47,7 +47,7 @@ W3CStoragePlugin = (function(_super) {
   }
 
   W3CStoragePlugin.prototype.get = function(key) {
-    return JSON.parse(this.storage.getItem(key));
+    return this.parseJSON(this.storage.getItem(key));
   };
 
   W3CStoragePlugin.prototype.put = function(key, value) {
@@ -99,6 +99,130 @@ W3CSessionStoragePlugin = (function(_super) {
 
 })(W3CStoragePlugin);
 
+/*
+Interface for cookie storage
+*/
+
+
+CookieStoragePlugin = (function(_super) {
+  var docCookies;
+
+  __extends(CookieStoragePlugin, _super);
+
+  /*
+      Mozilla License
+      https://developer.mozilla.org/en-US/docs/DOM/document.cookie
+      * docCookies.setItem(name, value[, end[, path[, domain[, secure]]]])
+      * docCookies.getItem(name)
+      * docCookies.removeItem(name[, path], domain)
+      * docCookies.hasItem(name)
+      * docCookies.keys()
+  */
+
+
+  docCookies = {
+    getItem: function(sKey) {
+      return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+    },
+    setItem: function(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+      var sExpires, _ref;
+      if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) {
+        return false;
+      }
+      sExpires = "";
+      if (vEnd) {
+        switch (vEnd.constructor) {
+          case Number:
+            sExpires = (_ref = vEnd === Infinity) != null ? _ref : {
+              "; expires=Fri, 31 Dec 9999 23:59:59 GMT": "; max-age=" + vEnd
+            };
+            break;
+          case String:
+            sExpires = "; expires=" + vEnd;
+            break;
+          case Date:
+            sExpires = "; expires=" + vEnd.toUTCString();
+            break;
+        }
+      }
+      document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain != null ? sDomain : "; domain=" + {
+        sDomain: ""
+      }) + (sPath != null ? sPath : "; path=" + {
+        sPath: ""
+      }) + (bSecure != null ? bSecure : {
+        "; secure": ""
+      });
+      return true;
+    },
+    removeItem: function(sKey, sPath, sDomain) {
+      if (!sKey || !this.hasItem(sKey)) {
+        return false;
+      }
+      document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain != null ? sDomain : "; domain=" + {
+        sDomain: ""
+      }) + (sPath != null ? sPath : "; path=" + {
+        sPath: ""
+      });
+      return true;
+    },
+    hasItem: function(sKey) {
+      return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+    },
+    keys: function() {
+      var aKeys, key, nIdex, nIdx, _i, _len;
+      aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+      nIdex = 0;
+      for (_i = 0, _len = aKeys.length; _i < _len; _i++) {
+        key = aKeys[_i];
+        nIdx = nIdx + 1;
+        aKeys[nIdx] = decodeURIComponent(key);
+      }
+      return aKeys;
+    }
+  };
+
+  function CookieStoragePlugin() {
+    var cookie, cookie_name, cookie_value, cookies, tokens, _i, _len;
+    this.storage = Jaadi.createInstance("dom");
+    cookies = document.cookie.split(';');
+    for (_i = 0, _len = cookies.length; _i < _len; _i++) {
+      cookie = cookies[_i];
+      if (cookie) {
+        tokens = cookie.split("=");
+        cookie_name = tokens[0].replace(/^\s+|\s+$/g, '');
+        cookie_value = tokens[1];
+        this.storage.put(cookie_name, cookie_value);
+      }
+    }
+  }
+
+  CookieStoragePlugin.prototype.get = function(key) {
+    return this.parseJSON(this.storage.get(key));
+  };
+
+  CookieStoragePlugin.prototype.put = function(key, value) {
+    console.log(this.storage.items());
+    this.storage.put(key, JSON.stringify(value));
+    return docCookies.setItem(key, value);
+  };
+
+  CookieStoragePlugin.prototype.remove = function(key) {
+    docCookies.removeItem(key);
+    return this.storage.remove(key);
+  };
+
+  CookieStoragePlugin.prototype.size = function() {
+    return this.storage.size();
+  };
+
+  CookieStoragePlugin.prototype.clear = function() {
+    return this.storage.clear();
+  };
+
+  return CookieStoragePlugin;
+
+})(JaadiPlugin);
+
 Jaadi.plugins.add("localstorage", function() {
   try {
     window.localStorage;
@@ -125,4 +249,11 @@ Jaadi.plugins.add("session", function() {
   } catch (_error) {
     throw "sessionStorage not supported";
   }
+});
+
+Jaadi.plugins.add("cookie", function() {
+  if (!window["cookieplugin"]) {
+    window["cookieplugin"] = new CookieStoragePlugin();
+  }
+  return window["cookieplugin"];
 });

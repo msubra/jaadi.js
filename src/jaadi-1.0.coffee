@@ -15,6 +15,12 @@ class JaadiPlugin
             _items.push([key,val])
         return _items
 
+    parseJSON: (item) ->
+        try
+            JSON.parse item
+        catch
+            null
+
 class Jaadi
 
     ###
@@ -61,4 +67,3 @@ class Jaadi
     
     # Add the DOM storage
     @plugins.add("dom",DomStoragePlugin)
-
