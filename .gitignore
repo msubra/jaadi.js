@@ -1,2 +1,5 @@
 target/
 node_modules/
+Grunt*
+grunt*
+package.json
