@@ -4,7 +4,7 @@ Jaadi is simple, easy to use, abstraction API over many storage techniques provi
 
 ##How to get it?
 
-You can download the latest version of [jaadi here](build/js/jaadi-1.0.js). Standard Jaadi implementation gives access to following storage implementations
+You can download the latest version of [jaadi from the build/ folder](build/js/jaadi-1.0.js). Standard Jaadi implementation gives access to following storage implementations
 
 * Browser DOM's default property map `{}`
 * Browser Cookie `document.cookies`
@@ -12,9 +12,6 @@ You can download the latest version of [jaadi here](build/js/jaadi-1.0.js). Stan
 * W3C's `window.sessionStorage`
 * Chrome's `chrome.storage.local`
 
-### Additional plugins
-
-Jaadi provides a simple Binary search tree implementation. You can [download the plugin](build/js/bst.jaadi.js) and use it in your app.
 
 ##API Usage
 
@@ -81,6 +78,10 @@ Add plugin to Jaadi
 Use it
 
     tree = Jaadi.createInstance("bst");
+
+### Additional plugins
+
+Jaadi provides a simple Binary search tree implementation. You can [download the plugin](build/js/bst.jaadi.js).
 
 
 ### Supported plugins
