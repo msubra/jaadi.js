@@ -1,9 +1,9 @@
 fs = require 'fs'
+{exec} = require 'child_process'
 
 JAADI_VERSION = "1.0"
 
 alreadyRan = no
-{exec} = require 'child_process'
 
 # define directories
 target_dir = 'build'
@@ -22,15 +22,6 @@ rmr = (path) ->
             else
                 fs.unlinkSync curPath
         )
-
-
-cleanCreateFolder = (folder) ->
-    fs.exists folder,(exists) ->
-        if exists
-            console.log "#{folder} exists. removing"
-            rmr folder
-        console.log "creating folder #{folder}" 
-        createFolderIfNotExists folder
 
 createFolderIfNotExists = (folder) ->
     fs.exists folder,(exists) ->
@@ -55,36 +46,8 @@ task 'create:target', 'create target folder', ->
     console.log "creating #{target_app_dir}"
     createFolderIfNotExists target_app_dir
 
+
 task 'create:merge-sources', 'merge all CS files into one', ->
-    files = [
-        'jaadi-1.0',
-        'storage.jaadi'
-    ]
-
-    single_src = "#{target_app_dir}/jaadi-#{JAADI_VERSION}.coffee"
-
-    contents = new Array 
-    remaining = files.length
-
-    for file, index in files then do (file, index) ->
-        fs.readFile "src/#{file}.coffee", 'utf8', (err, fileContents) ->
-          throw err if err
-          contents[index] = fileContents
-
-          #chaining process fn here
-          process() if --remaining is 0
-
-    process = ->
-        fs.writeFile single_src, contents.join('\n\n'), 'utf8', (err) ->
-          throw err if err
-          exec "coffee --compile --bare #{single_src}", (err, stdout, stderr) ->
-            throw err if err
-            console.log stdout + stderr
-            fs.unlink single_src, (err) ->
-              throw err if err
-              console.log 'Done.'
-
-task 'create:merge-sources-1', 'merge all CS files into one', ->
     files = [
         'jaadi-1.0',
         'storage.jaadi'
@@ -132,12 +95,7 @@ task 'copy:tests', 'copy dependencies', ->
 
 task 'compile', 'copy dependencies', ->
     invoke 'create:target'
-    invoke 'create:merge-sources-1'
+    invoke 'create:merge-sources'
     invoke 'copy:dependencies'
     invoke 'compile:all'
     invoke 'copy:tests'
-
-task 'create:distro', 'create distro', ->
-    invoke 'create:target'
-    invoke 'create:merge-sources'
-    #invoke 'copy:dependencies'
