@@ -1,8 +1,8 @@
+build/tests/
+build/app/
+js/
 target/
 node_modules/
 Grunt*
 grunt*
 package.json
-js/
-build/app
-build/tests
